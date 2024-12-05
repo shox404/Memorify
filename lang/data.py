@@ -9,11 +9,6 @@ translations = {
         "en": "Please, make your selection.",
         "ru": "Пожалуйста, сделайте ваш выбор.",
     },
-    "save_data": {
-        "uz": "Ma'lumotni saqlash",
-        "en": "Save Data",
-        "ru": "Сохранить данные",
-    },
     "save_password": {
         "uz": "Parolni saqlash",
         "en": "Save Password",

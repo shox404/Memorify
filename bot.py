@@ -15,14 +15,12 @@ dp = Dispatcher()
 
 async def register_handlers():
     from handlers import start, options
-    from options.save_data import handle_image, handle_text
-    from aiogram.types import ContentType
 
     dp.message.register(start.command_start, Command(commands=["start"]))
     dp.callback_query.register(options.callback_handler)
 
-    dp.message.register(handle_image, lambda message: message.content_type == ContentType.PHOTO)
-    dp.message.register(handle_text, lambda message: message.content_type == ContentType.TEXT)
+    # from aiogram.types import ContentType
+    # dp.message.register(handle_text, lambda message: message.content_type == ContentType.TEXT)
 
 
 

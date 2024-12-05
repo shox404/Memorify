@@ -3,6 +3,7 @@ from lang.function import use_text
 from utils.creator import inline_btn, set_commands
 from database.functions.user import insert_user_data
 
+
 async def command_start(msg: Message):
     user = msg.from_user
 
@@ -19,8 +20,7 @@ async def command_start(msg: Message):
 
     board = InlineKeyboardMarkup(
         inline_keyboard=[
-            [inline_btn("save_data", msg), inline_btn("save_password", msg)],
-            [inline_btn("save_reminder", msg), inline_btn("search_data", msg)],
+            [inline_btn("save_reminder", msg)],
         ]
     )
 
