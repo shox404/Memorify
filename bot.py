@@ -15,12 +15,11 @@ dp = Dispatcher()
 
 async def register_handlers():
     from handlers import start, options
+    from aiogram.types import ContentType
+    from options.save_reminder import handle_time, handle_task_description, user_data
 
     dp.message.register(start.command_start, Command(commands=["start"]))
     dp.callback_query.register(options.callback_handler)
-
-    from aiogram.types import ContentType
-    from options.save_reminder import handle_time, handle_task_description, user_data
 
     dp.message.register(
         handle_task_description,
@@ -28,7 +27,6 @@ async def register_handlers():
         and "step" in user_data.get(message.from_user.id, {})
         and user_data[message.from_user.id]["step"] == "waiting_for_task",
     )
-
     dp.message.register(
         handle_time,
         lambda message: message.content_type == ContentType.TEXT

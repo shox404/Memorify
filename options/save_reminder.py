@@ -1,6 +1,6 @@
 import uuid
 import time
-from aiogram import types
+from aiogram import types, Bot
 from database.functions.reminder import save_reminder_data, schedule_reminder
 
 user_data = {}
@@ -23,34 +23,7 @@ async def handle_task_description(message: types.Message):
         )
 
 
-# async def handle_time(message: types.Message):
-#     user_id = message.from_user.id
-#     if user_id in user_data and user_data[user_id].get("step") == "waiting_for_time":
-#         reminder_time_str = message.text
-#         try:
-#             reminder_time = time.mktime(
-#                 time.strptime(reminder_time_str, "%Y-%m-%d %H:%M")
-#             )
-
-#             user_data[user_id]["time"] = reminder_time
-#             user_data[user_id]["step"] = "completed"
-#             await message.answer(
-#                 f"Your reminder for '{user_data[user_id]['task']}' is set for {reminder_time_str}."
-#             )
-
-#             reminder_data = {
-#                 "id": str(uuid.uuid4()),
-#                 "task": user_data[user_id]["task"],
-#                 "reminder_time": user_data[user_id]["time"],
-#             }
-
-#             await save_reminder_data(reminder_data)
-#             await schedule_reminder(reminder_data)
-#             user_data.pop(user_id, None)
-#         except ValueError:
-#             await message.answer("Invalid time format. Please use 'YYYY-MM-DD HH:MM'.")
-from aiogram import Bot 
-async def handle_time(message: types.Message,bot:Bot):
+async def handle_time(message: types.Message, bot: Bot):
     user_id = message.from_user.id
     if user_id in user_data and user_data[user_id].get("step") == "waiting_for_time":
         reminder_time_str = message.text
@@ -69,11 +42,11 @@ async def handle_time(message: types.Message,bot:Bot):
                 "id": str(uuid.uuid4()),
                 "task": user_data[user_id]["task"],
                 "reminder_time": user_data[user_id]["time"],
-                "user_id": user_id,  # Add the user ID
+                "user_id": user_id,
             }
 
             await save_reminder_data(reminder_data)
-            await schedule_reminder(reminder_data,bot)
+            await schedule_reminder(reminder_data, bot)
             user_data.pop(user_id, None)
         except ValueError:
             await message.answer("Invalid time format. Please use 'YYYY-MM-DD HH:MM'.")
