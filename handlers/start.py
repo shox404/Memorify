@@ -20,7 +20,7 @@ async def command_start(msg: Message):
 
     board = InlineKeyboardMarkup(
         inline_keyboard=[
-            [inline_btn("save_reminder", msg)],
+            [inline_btn("set_reminder", msg)],
         ]
     )
 

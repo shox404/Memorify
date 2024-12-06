@@ -4,24 +4,23 @@ import logging
 from aiogram import Bot, Dispatcher
 from aiogram.filters import Command
 from dotenv import load_dotenv
+from aiogram.client.bot import DefaultBotProperties
 
 load_dotenv()
 
 logging.basicConfig(level=logging.INFO)
 
-bot = Bot(token=os.getenv("TELEGRAM_TOKEN"), default=None)
+bot = Bot(
+    token=os.getenv("TELEGRAM_TOKEN"), default=DefaultBotProperties(parse_mode="HTML")
+)
 dp = Dispatcher()
 
 
 async def register_handlers():
     from handlers import start, options
     from aiogram.types import ContentType
-    from options.save_reminder import handle_time, handle_task_description, user_data
+    from options.set_reminder import handle_time, handle_task_description, user_data
     from handlers.reminder import register_reminder_command
-
-    # dp.message.register(
-    #     reminder.command_set_reminder, Command(commands=["save_reminder"])
-    # )
 
     await register_reminder_command(dp)
     dp.message.register(start.command_start, Command(commands=["start"]))
