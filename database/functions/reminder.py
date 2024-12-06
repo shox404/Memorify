@@ -3,6 +3,8 @@ import asyncio
 from database.config import get_db_connection
 from utils.creator import create_table_if_not_exists
 from aiogram import Bot
+from lang.function import use_text
+from aiogram.types import Message
 
 
 async def set_reminder_data(data):
@@ -32,13 +34,13 @@ async def set_reminder_data(data):
     await db.close()
 
 
-async def schedule_reminder(reminder_data, bot: Bot):
+async def schedule_reminder(reminder_data, bot: Bot, message: Message):
     reminder_id = reminder_data["id"]
     reminder_time = reminder_data["reminder_time"]
 
     delay = max(0, reminder_time - time.time())
     await asyncio.sleep(delay)
-    await notify_user(reminder_id, reminder_data, bot)
+    await notify_user(reminder_id, reminder_data, bot, message)
 
 
 async def get_user_id_by_reminder(reminder_id):
@@ -59,13 +61,16 @@ async def get_user_id_by_reminder(reminder_id):
         await conn.close()
 
 
-async def notify_user(reminder_id, reminder, bot: Bot):
+async def notify_user(reminder_id, reminder, bot: Bot, message: Message):
     try:
         user_id = await get_user_id_by_reminder(reminder_id)
         if user_id:
+            task_text = use_text("reminder_task", message)
+            time_text = use_text("reminder_time", message)
+
             reminder_text = (
-                f"<b>🌟 Hey! It's time to: {reminder['task']}</b>\n"
-                f"<b>🔔 Set for: {time.strftime('%Y-%m-%d %H:%M', time.localtime(reminder['reminder_time']))}</b>"
+                f"<b>🌟 {task_text}: {reminder['task']}</b>\n"
+                f"<b>🔔 {time_text}: {time.strftime('%Y-%m-%d %H:%M', time.localtime(reminder['reminder_time']))}</b>"
             )
             await bot.send_message(user_id, reminder_text, parse_mode="HTML")
     except Exception as e:

@@ -7,6 +7,23 @@ from lang.function import use_text
 user_data = {}
 
 
+async def set_reminder(cb_query: types.CallbackQuery):
+    user_id = cb_query.from_user.id
+    user_data[user_id] = {"step": "waiting_for_task"}
+    text = use_text("reminder_task_description", cb_query)
+    await cb_query.message.answer(f"<b>{text}</b>")
+
+
+async def handle_task_description(message: types.Message):
+    user_id = message.from_user.id
+    if user_id in user_data and user_data[user_id].get("step") == "waiting_for_task":
+        task_text = message.text
+        user_data[user_id]["task"] = task_text
+        user_data[user_id]["step"] = "waiting_for_time"
+        text = use_text("reminder_time_prompt", message)
+        await message.answer(f"<b>{text}</b>")
+
+
 async def handle_time(message: types.Message, bot: Bot):
     user_id = message.from_user.id
     if user_id in user_data and user_data[user_id].get("step") == "waiting_for_time":
@@ -18,14 +35,10 @@ async def handle_time(message: types.Message, bot: Bot):
 
             user_data[user_id]["time"] = reminder_time
             user_data[user_id]["step"] = "completed"
-            reminder_time_str = time.strftime(
-                "%Y-%m-%d %H:%M", time.localtime(reminder_time)
+            text = use_text("reminder_set_message", message)
+            await message.answer(
+                f"<b>{text.format(reminder_time_str=reminder_time_str)}</b>"
             )
-
-            reminder_message = use_text("reminder_set", message).format(
-                time=reminder_time_str
-            )
-            await message.answer(f"<b>{reminder_message}</b>")
 
             reminder_data = {
                 "id": str(uuid.uuid4()),
@@ -35,8 +48,8 @@ async def handle_time(message: types.Message, bot: Bot):
             }
 
             await set_reminder_data(reminder_data)
-            await schedule_reminder(reminder_data, bot)
+            await schedule_reminder(reminder_data, bot, message)
             user_data.pop(user_id, None)
         except ValueError:
-            invalid_time_message = use_text("invalid_time_format", message)
-            await message.answer(f"<b>{invalid_time_message}</b>")
+            text = use_text("invalid_time_format", message)
+            await message.answer(f"<b>{text}</b>")
