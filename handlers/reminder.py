@@ -1,18 +1,20 @@
 import uuid
 import time
-from aiogram import types, Bot
+from aiogram import Bot, Dispatcher
+from aiogram.filters import Command
 from database.functions.reminder import save_reminder_data, schedule_reminder
+from aiogram.types import ContentType, CallbackQuery, Message
 
 user_data = {}
 
 
-async def save_reminder(cb_query: types.CallbackQuery):
-    user_id = cb_query.from_user.id
+async def set_reminder(msg: CallbackQuery):
+    user_id = msg.from_user.id
     user_data[user_id] = {"step": "waiting_for_task"}
-    await cb_query.message.answer("Please describe your task or reminder.")
+    await msg.answer("Please describe your task or reminder.")
 
 
-async def handle_task_description(message: types.Message):
+async def handle_task_description(message: Message):
     user_id = message.from_user.id
     if user_id in user_data and user_data[user_id].get("step") == "waiting_for_task":
         task_text = message.text
@@ -23,7 +25,7 @@ async def handle_task_description(message: types.Message):
         )
 
 
-async def handle_time(message: types.Message, bot: Bot):
+async def handle_time(message: Message, bot: Bot):
     user_id = message.from_user.id
     if user_id in user_data and user_data[user_id].get("step") == "waiting_for_time":
         reminder_time_str = message.text
@@ -51,3 +53,18 @@ async def handle_time(message: types.Message, bot: Bot):
         except ValueError:
             await message.answer("Invalid time format. Please use 'YYYY-MM-DD HH:MM'.")
 
+
+async def register_reminder_command(dp: Dispatcher):
+    dp.message.register(set_reminder, Command(commands=["save_reminder"]))
+    dp.message.register(
+        handle_task_description,
+        lambda message: message.content_type == ContentType.TEXT
+        and "step" in user_data.get(message.from_user.id, {})
+        and user_data[message.from_user.id]["step"] == "waiting_for_task",
+    )
+    dp.message.register(
+        handle_time,
+        lambda message: message.content_type == ContentType.TEXT
+        and "step" in user_data.get(message.from_user.id, {})
+        and user_data[message.from_user.id]["step"] == "waiting_for_time",
+    )

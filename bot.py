@@ -17,7 +17,13 @@ async def register_handlers():
     from handlers import start, options
     from aiogram.types import ContentType
     from options.save_reminder import handle_time, handle_task_description, user_data
+    from handlers.reminder import register_reminder_command
 
+    # dp.message.register(
+    #     reminder.command_set_reminder, Command(commands=["save_reminder"])
+    # )
+
+    await register_reminder_command(dp)
     dp.message.register(start.command_start, Command(commands=["start"]))
     dp.callback_query.register(options.callback_handler)
 
