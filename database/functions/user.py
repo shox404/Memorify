@@ -3,30 +3,28 @@ from utils.creator import create_table_if_not_exists
 
 
 async def get_all_users():
-    conn = await get_db_connection()
+    """Read users from 'users' table"""
+
+    db = await get_db_connection()
 
     try:
-        rows = await conn.fetch(
+        return await db.fetch(
             """
             SELECT id, username, first_name
             FROM users
             """
         )
-        return rows
     finally:
-        await conn.close()
+        await db.close()
 
 
 async def insert_user_data(user_data):
-    """
-    Insert user data into the `users` table, avoiding duplicates.
-    Args:
-        user_data (dict): A dictionary containing user id, username, and first_name.
-    """
-    conn = await get_db_connection()
+    """Insert user data into the 'users' table, avoiding duplicates"""
+
+    db = await get_db_connection()
 
     await create_table_if_not_exists(
-        conn,
+        db,
         "users",
         """
         id BIGINT PRIMARY KEY,
@@ -35,8 +33,7 @@ async def insert_user_data(user_data):
         """,
     )
 
-    # Insert user data
-    await conn.execute(
+    await db.execute(
         """
         INSERT INTO users (id, username, first_name)
         VALUES ($1, $2, $3)
@@ -47,12 +44,14 @@ async def insert_user_data(user_data):
         user_data["first_name"],
     )
 
-    await conn.close()
+    await db.close()
 
 
 async def update_user_data(user_id, update_fields):
-    conn = await get_db_connection()
-    await conn.execute(
+    """Update user into 'users' by id"""
+
+    db = await get_db_connection()
+    await db.execute(
         """
         UPDATE users
         SET latest_data_id = $2
@@ -61,4 +60,4 @@ async def update_user_data(user_id, update_fields):
         user_id,
         update_fields.get("latest_data_id"),
     )
-    await conn.close()
+    await db.close()
