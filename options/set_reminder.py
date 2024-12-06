@@ -5,13 +5,16 @@ from database.functions.reminder import set_reminder_data, schedule_reminder
 from lang.function import use_text
 
 user_data = {}
+taskMsg = None
+timeMsg = None
 
 
 async def set_reminder(cb_query: types.CallbackQuery):
     user_id = cb_query.from_user.id
     user_data[user_id] = {"step": "waiting_for_task"}
     text = use_text("reminder_task_description", cb_query)
-    await cb_query.message.answer(f"<b>{text}</b>")
+    global taskMsg
+    taskMsg = await cb_query.message.answer(f"<b>{text}</b>")
 
 
 async def handle_task_description(message: types.Message):
@@ -19,15 +22,28 @@ async def handle_task_description(message: types.Message):
     if user_id in user_data and user_data[user_id].get("step") == "waiting_for_task":
         task_text = message.text
         user_data[user_id]["task"] = task_text
+        if taskMsg:
+            try:
+                await taskMsg.delete()
+                await message.delete() 
+            except Exception as e:
+                print("Error deleting message!")
         user_data[user_id]["step"] = "waiting_for_time"
         text = use_text("reminder_time_prompt", message)
-        await message.answer(f"<b>{text}</b>")
+        global timeMsg
+        timeMsg = await message.answer(f"<b>{text}</b>")
 
 
 async def handle_time(message: types.Message, bot: Bot):
     user_id = message.from_user.id
     if user_id in user_data and user_data[user_id].get("step") == "waiting_for_time":
         reminder_time_str = message.text
+        if timeMsg:
+            try:
+                await timeMsg.delete()
+                await message.delete() 
+            except Exception as e:
+                print("Error deleting message!")
         try:
             reminder_time = time.mktime(
                 time.strptime(reminder_time_str, "%Y-%m-%d %H:%M")
